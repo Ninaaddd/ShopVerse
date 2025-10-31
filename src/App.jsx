@@ -30,8 +30,18 @@ function App() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(checkAuth());
-  }, [dispatch]);
+  const verifyUser = async () => {
+    try {
+      const result = await dispatch(checkAuth()).unwrap();
+      console.log("✅ Auth verified:", result);
+    } catch (error) {
+      console.warn("❌ Auth check failed:", error);
+    }
+  };
+  verifyUser();
+}, [dispatch]);
+
+
 
   if (isLoading) return <Skeleton className="w-[800] bg-black h-[600px]" />;
 
