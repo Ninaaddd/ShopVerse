@@ -11,10 +11,10 @@ export const addNewAddress = createAsyncThunk(
   async (formData) => {
     const response = await axios.post(
       "https://shopverse-server.onrender.com/api/shop/address/add",
+      formData,
       {
-        withCredentials:true,
+        withCredentials: true,
       },
-      formData
     );
 
     return response.data;
@@ -40,10 +40,10 @@ export const editaAddress = createAsyncThunk(
   async ({ userId, addressId, formData }) => {
     const response = await axios.put(
       `https://shopverse-server.onrender.com/api/shop/address/update/${userId}/${addressId}`,
+      formData,
       {
         withCredentials: true,
       },
-      formData
     );
 
     return response.data;
