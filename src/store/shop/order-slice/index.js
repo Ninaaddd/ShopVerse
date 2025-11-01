@@ -11,51 +11,76 @@ const initialState = {
 
 export const createNewOrder = createAsyncThunk(
   "/order/createNewOrder",
-  async (orderData) => {
-    const response = await axios.post(
-      "https://shopverse-server.onrender.com/api/shop/order/create",
-      orderData
-    );
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(
+        "https://shopverse-server.onrender.com/api/shop/order/create",
+        {}, // no need to send userId/orderData; server will use Cart + JWT user
+        {
+          withCredentials: true,
+        }
+      );
 
-    return response.data;
+      return response.data; // { success, approvalURL, orderId }
+    } catch (err) {
+      return rejectWithValue(err.response?.data || { message: "Order creation failed" });
+    }
   }
 );
 
 export const capturePayment = createAsyncThunk(
   "/order/capturePayment",
-  async ({ paymentId, payerId, orderId }) => {
+  async ({ paymentId, payerId, orderId },{rejectWithValue}) => {
+    try{
+
+    
     const response = await axios.post(
       "https://shopverse-server.onrender.com/api/shop/order/capture",
       {
         paymentId,
         payerId,
         orderId,
-      }
+      },
+      {
+        withCredentials: true,
+      },
     );
 
     return response.data;
+  }catch(err){
+    return rejectWithValue(err.response?.data || {message: "Payment Capture Failed"});
+  }
   }
 );
 
 export const getAllOrdersByUserId = createAsyncThunk(
   "/order/getAllOrdersByUserId",
-  async (userId) => {
+  async (_,{rejectWithValue}) => {
+    try{
     const response = await axios.get(
-      `https://shopverse-server.onrender.com/api/shop/order/list/${userId}`
+      `https://shopverse-server.onrender.com/api/shop/order/list`
     );
 
     return response.data;
+  }catch(err){
+    return rejectWithValue(err.response?.data || {message: "Failed to Fetch orders"});
   }
+  }
+
 );
 
 export const getOrderDetails = createAsyncThunk(
   "/order/getOrderDetails",
-  async (id) => {
-    const response = await axios.get(
-      `https://shopverse-server.onrender.com/api/shop/order/details/${id}`
-    );
-
-    return response.data;
+  async (id, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(
+        `https://shopverse-server.onrender.com/api/shop/order/details/${id}`,
+        { withCredentials: true }
+      );
+      return response.data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data || { message: "Failed to fetch order details" });
+    }
   }
 );
 
