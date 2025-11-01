@@ -4,7 +4,7 @@ import { loginFormControls } from "@/config";
 import { loginUser } from "@/store/auth-slice";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 
 const initialState = {
   email: "",
@@ -15,6 +15,11 @@ function AuthLogin() {
   const [formData, setFormData] = useState(initialState);
   const dispatch = useDispatch();
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // 👇 fallback to homepage if no previous page was saved
+  const from = location.state?.from || "/";
 
   function onSubmit(event) {
     event.preventDefault();
@@ -24,6 +29,7 @@ function AuthLogin() {
         toast({
           title: data?.payload?.message,
         });
+        navigate(from, { replace: true });
       } else {
         toast({
           title: data?.payload?.message,
@@ -40,7 +46,7 @@ function AuthLogin() {
           Sign in to your account
         </h1>
         <p className="mt-2">
-          Don't have an account
+          Dont have an account
           <Link
             className="font-medium ml-2 text-primary hover:underline"
             to="/auth/register"

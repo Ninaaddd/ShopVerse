@@ -50,15 +50,10 @@ function App() {
   return (
     <div className="flex flex-col overflow-hidden bg-white">
       <Routes>
-        <Route
-          path="/"
-          element={
-            <CheckAuth
-              isAuthenticated={isAuthenticated}
-              user={user}
-            ></CheckAuth>
-          }
-        />
+        <Route path="/" element={<ShoppingLayout />}>
+          <Route index element={<ShoppingHome />} />
+        </Route>
+
         <Route
           path="/auth"
           element={
@@ -83,18 +78,25 @@ function App() {
           <Route path="orders" element={<AdminOrders />} />
           <Route path="features" element={<AdminFeatures />} />
         </Route>
-        <Route
-          path="/shop"
-          element={
-            <CheckAuth isAuthenticated={isAuthenticated} user={user}>
-              <ShoppingLayout />
-            </CheckAuth>
-          }
-        >
+        <Route path="/shop" element={<ShoppingLayout />}>
           <Route path="home" element={<ShoppingHome />} />
           <Route path="listing" element={<ShoppingListing />} />
-          <Route path="checkout" element={<ShoppingCheckout />} />
-          <Route path="account" element={<ShoppingAccount />} />
+          <Route
+              path="checkout"
+              element={
+                <CheckAuth isAuthenticated={isAuthenticated} user={user}>
+                  <ShoppingCheckout />
+                </CheckAuth>
+              }
+          />
+          <Route
+              path="account"
+              element={
+                <CheckAuth isAuthenticated={isAuthenticated} user={user}>
+                  <ShoppingAccount />
+                </CheckAuth>
+              }
+          />
           <Route path="paypal-return" element={<PaypalReturnPage />} />
           <Route path="payment-success" element={<PaymentSuccessPage />} />
           <Route path="search" element={<SearchProducts />} />
