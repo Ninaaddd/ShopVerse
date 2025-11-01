@@ -1,4 +1,4 @@
-import { LogOut, Menu, ShoppingCart, UserCog, ShoppingBag } from "lucide-react";
+import { LogOut, Menu, ShoppingCart, UserCog } from "lucide-react";
 import {
   Link,
   useLocation,
@@ -134,15 +134,29 @@ function HeaderRightContent() {
 }
 
 function ShoppingHeader() {
-  const { isAuthenticated } = useSelector((state) => state.auth);
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    dispatch(logoutUser());
+    navigate("/auth/login");
+  };
+
+  const handleLogin = () => {
+    navigate("/auth/login");
+  };
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background">
       <div className="flex h-16 items-center justify-between px-4 md:px-6">
+        {/* ---- Left: Logo ---- */}
         <Link to="/shop/home" className="flex items-center gap-2">
           <img src={bagIcon} className="h-[4.85rem] w-[4.85rem]" alt="icon" />
           <span className="font-extrabold text-2xl">ShopVerse</span>
         </Link>
+
+        {/* ---- Mobile Menu ---- */}
         <Sheet>
           <SheetTrigger asChild>
             <Button variant="outline" size="icon" className="lg:hidden">
@@ -152,19 +166,62 @@ function ShoppingHeader() {
           </SheetTrigger>
           <SheetContent side="left" className="w-full max-w-xs">
             <MenuItems />
-            <HeaderRightContent />
+
+            {/* ---- Auth Buttons in Mobile Menu ---- */}
+            <div className="mt-4 border-t pt-4 flex flex-col gap-2">
+              {isAuthenticated ? (
+                <>
+                  <span className="text-sm text-muted-foreground">
+                    Hi, {user?.name || "User"}
+                  </span>
+                  <Button
+                    variant="destructive"
+                    onClick={handleLogout}
+                    className="w-full"
+                  >
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                <Button onClick={handleLogin} className="w-full">
+                  Log In
+                </Button>
+              )}
+            </div>
           </SheetContent>
         </Sheet>
-        <div className="hidden lg:block">
-          <MenuItems />
-        </div>
 
-        <div className="hidden lg:block">
-          <HeaderRightContent />
+        {/* ---- Desktop Menu ---- */}
+        <div className="hidden lg:flex items-center gap-6">
+          <MenuItems />
+
+          {/* ---- Auth Buttons for Desktop ---- */}
+          {isAuthenticated ? (
+            <>
+              <Link
+                to="/shop/account"
+                className="font-medium hover:underline text-primary"
+              >
+                Hi, {user?.name || "User"}
+              </Link>
+              <Button
+                variant="destructive"
+                onClick={handleLogout}
+                className="px-4 py-2"
+              >
+                Logout
+              </Button>
+            </>
+          ) : (
+            <Button onClick={handleLogin} className="px-4 py-2">
+              Log In
+            </Button>
+          )}
         </div>
       </div>
     </header>
   );
 }
+
 
 export default ShoppingHeader;
