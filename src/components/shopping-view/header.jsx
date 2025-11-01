@@ -23,7 +23,7 @@ import UserCartWrapper from "./cart-wrapper";
 import { useEffect, useState } from "react";
 import { fetchCartItems } from "@/store/shop/cart-slice";
 import { Label } from "../ui/label";
-import bagIcon from '../../assets/bag.png'
+import bagIcon from "../../assets/bag.png";
 
 function MenuItems() {
   const navigate = useNavigate();
@@ -34,19 +34,19 @@ function MenuItems() {
     sessionStorage.removeItem("filters");
     const currentFilter =
       getCurrentMenuItem.id !== "home" &&
-        getCurrentMenuItem.id !== "products" &&
-        getCurrentMenuItem.id !== "search"
+      getCurrentMenuItem.id !== "products" &&
+      getCurrentMenuItem.id !== "search"
         ? {
-          category: [getCurrentMenuItem.id],
-        }
+            category: [getCurrentMenuItem.id],
+          }
         : null;
 
     sessionStorage.setItem("filters", JSON.stringify(currentFilter));
 
     location.pathname.includes("listing") && currentFilter !== null
       ? setSearchParams(
-        new URLSearchParams(`?category=${getCurrentMenuItem.id}`)
-      )
+          new URLSearchParams(`?category=${getCurrentMenuItem.id}`)
+        )
       : navigate(getCurrentMenuItem.path);
   }
 
@@ -65,76 +65,10 @@ function MenuItems() {
   );
 }
 
-function HeaderRightContent() {
-  const { user } = useSelector((state) => state.auth);
-  const { cartItems } = useSelector((state) => state.shopCart);
-  const [openCartSheet, setOpenCartSheet] = useState(false);
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
-
-  function handleLogout() {
-    dispatch(logoutUser());
-  }
-
-  useEffect(() => {
-    dispatch(fetchCartItems(user?.id));
-  }, [dispatch]);
-
-  console.log(cartItems, "sangam");
-
-  return (
-    <div className="flex lg:items-center lg:flex-row flex-col gap-4">
-      <Sheet open={openCartSheet} onOpenChange={() => setOpenCartSheet(false)}>
-        <Button
-          onClick={() => setOpenCartSheet(true)}
-          variant="outline"
-          size="icon"
-          className="relative"
-        >
-          <ShoppingCart className="w-6 h-6" />
-          <span className="absolute top-[-5px] right-[2px] font-bold text-sm">
-            {cartItems?.items?.length || 0}
-          </span>
-          <span className="sr-only">User cart</span>
-        </Button>
-        <UserCartWrapper
-          setOpenCartSheet={setOpenCartSheet}
-          cartItems={
-            cartItems && cartItems.items && cartItems.items.length > 0
-              ? cartItems.items
-              : []
-          }
-        />
-      </Sheet>
-
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Avatar className="bg-black">
-            <AvatarFallback className="bg-black text-white font-extrabold">
-              {user?.userName[0].toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent side="right" className="w-56">
-          <DropdownMenuLabel>Logged in as {user?.userName}</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => navigate("/shop/account")}>
-            <UserCog className="mr-2 h-4 w-4" />
-            Account
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleLogout}>
-            <LogOut className="mr-2 h-4 w-4" />
-            Logout
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
-  );
-}
-
 function ShoppingHeader() {
   const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const { cartItems } = useSelector((state) => state.shopCart);
+  const [openCartSheet, setOpenCartSheet] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -146,6 +80,20 @@ function ShoppingHeader() {
   const handleLogin = () => {
     navigate("/auth/login");
   };
+
+  const handleCartClick = () => {
+    if (!isAuthenticated) {
+      navigate("/auth/login", { state: { from: "/shop/home" } });
+    } else {
+      setOpenCartSheet(true);
+    }
+  };
+
+  useEffect(() => {
+    if (isAuthenticated && user?.id) {
+      dispatch(fetchCartItems(user.id));
+    }
+  }, [dispatch, isAuthenticated, user?.id]);
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background">
@@ -166,13 +114,19 @@ function ShoppingHeader() {
           </SheetTrigger>
           <SheetContent side="left" className="w-full max-w-xs">
             <MenuItems />
+            <div
+              className="flex items-center gap-2 mt-4 cursor-pointer"
+              onClick={handleCartClick}
+            >
+              <ShoppingCart className="h-5 w-5" />
+              <span>Cart ({cartItems?.items?.length || 0})</span>
+            </div>
 
-            {/* ---- Auth Buttons in Mobile Menu ---- */}
             <div className="mt-4 border-t pt-4 flex flex-col gap-2">
               {isAuthenticated ? (
                 <>
                   <span className="text-sm text-muted-foreground">
-                    Hi, {user?.name || "User"}
+                    Hi, {user?.userName || "User"}
                   </span>
                   <Button
                     variant="destructive"
@@ -195,23 +149,45 @@ function ShoppingHeader() {
         <div className="hidden lg:flex items-center gap-6">
           <MenuItems />
 
-          {/* ---- Auth Buttons for Desktop ---- */}
+          {/* ---- Cart Button ---- */}
+          <Button
+            variant="outline"
+            size="icon"
+            className="relative"
+            onClick={handleCartClick}
+          >
+            <ShoppingCart className="w-6 h-6" />
+            <span className="absolute top-[-5px] right-[2px] font-bold text-sm">
+              {cartItems?.items?.length || 0}
+            </span>
+          </Button>
+
+          {/* ---- Auth Section ---- */}
           {isAuthenticated ? (
-            <>
-              <Link
-                to="/shop/account"
-                className="font-medium hover:underline text-primary"
-              >
-                Hi, {user?.name || "User"}
-              </Link>
-              <Button
-                variant="destructive"
-                onClick={handleLogout}
-                className="px-4 py-2"
-              >
-                Logout
-              </Button>
-            </>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Avatar className="bg-black">
+                  <AvatarFallback className="bg-black text-white font-extrabold">
+                    {user?.userName?.[0]?.toUpperCase() || "U"}
+                  </AvatarFallback>
+                </Avatar>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent side="right" className="w-56">
+                <DropdownMenuLabel>
+                  Logged in as {user?.userName}
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate("/shop/account")}>
+                  <UserCog className="mr-2 h-4 w-4" />
+                  Account
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
             <Button onClick={handleLogin} className="px-4 py-2">
               Log In
@@ -219,9 +195,20 @@ function ShoppingHeader() {
           )}
         </div>
       </div>
+
+      {/* ---- Cart Sheet (Shared) ---- */}
+      <Sheet open={openCartSheet} onOpenChange={setOpenCartSheet}>
+        <UserCartWrapper
+          setOpenCartSheet={setOpenCartSheet}
+          cartItems={
+            cartItems?.items && cartItems.items.length > 0
+              ? cartItems.items
+              : []
+          }
+        />
+      </Sheet>
     </header>
   );
 }
-
 
 export default ShoppingHeader;
