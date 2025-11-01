@@ -94,6 +94,8 @@ function ShoppingHeader() {
   useEffect(() => {
     if (isAuthenticated && user?.id) {
       dispatch(fetchCartItems(user.id));
+    }else{
+      dispatch(clearCart());
     }
   }, [dispatch, isAuthenticated, user?.id]);
 
