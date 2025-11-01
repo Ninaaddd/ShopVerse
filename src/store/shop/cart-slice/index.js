@@ -77,7 +77,7 @@ const shoppingCartSlice = createSlice({
   initialState,
   reducers: {
     clearCart: (state) => {
-      state.cartItems = []; // <-- resets cart on logout
+      state.cartItems = {items: []}; // <-- resets cart on logout
     },
   },
   extraReducers: (builder) => {
