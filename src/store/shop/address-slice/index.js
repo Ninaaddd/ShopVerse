@@ -23,9 +23,9 @@ export const addNewAddress = createAsyncThunk(
 
 export const fetchAllAddresses = createAsyncThunk(
   "/addresses/fetchAllAddresses",
-  async (userId) => {
+  async () => {
     const response = await axios.get(
-      `https://shopverse-server.onrender.com/api/shop/address/get/${userId}`,
+      `https://shopverse-server.onrender.com/api/shop/address/get`,
       {
         withCredentials: true,
       },
@@ -37,9 +37,9 @@ export const fetchAllAddresses = createAsyncThunk(
 
 export const editaAddress = createAsyncThunk(
   "/addresses/editaAddress",
-  async ({ userId, addressId, formData }) => {
+  async ({ addressId, formData }) => {
     const response = await axios.put(
-      `https://shopverse-server.onrender.com/api/shop/address/update/${userId}/${addressId}`,
+      `https://shopverse-server.onrender.com/api/shop/address/update/${addressId}`,
       formData,
       {
         withCredentials: true,
@@ -52,9 +52,9 @@ export const editaAddress = createAsyncThunk(
 
 export const deleteAddress = createAsyncThunk(
   "/addresses/deleteAddress",
-  async ({ userId, addressId }) => {
+  async ({ addressId }) => {
     const response = await axios.delete(
-      `https://shopverse-server.onrender.com/api/shop/address/delete/${userId}/${addressId}`,
+      `https://shopverse-server.onrender.com/api/shop/address/delete/${addressId}`,
       {
         withCredentials: true,
       },
