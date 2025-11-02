@@ -57,7 +57,7 @@ function ProductImageUpload({
     console.log(response, "response");
 
     if (response?.data?.success) {
-      setUploadedImageUrl(response.data.result.url);
+      setUploadedImageUrl(response.data.result.url.replace(/^http:\/\//, "https://"));
       setImageLoadingState(false);
     }
   }
