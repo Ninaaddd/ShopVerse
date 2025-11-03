@@ -32,8 +32,9 @@ function App() {
   useEffect(() => {
   const verifyUser = async () => {
     try {
-      const result = await dispatch(checkAuth()).unwrap();
-      console.log("✅ Auth verified:", result);
+      // const result = 
+      await dispatch(checkAuth()).unwrap();
+      // console.log("✅ Auth verified:", result);
     } catch (error) {
       console.warn("❌ Auth check failed:", error);
     }
