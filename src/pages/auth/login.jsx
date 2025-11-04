@@ -1,7 +1,7 @@
 import CommonForm from "@/components/common/form";
 import { useToast } from "@/components/ui/use-toast";
 import { loginFormControls } from "@/config";
-import { loginUser } from "@/store/auth-slice";
+import { loginUser, checkAuth } from "@/store/auth-slice";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { Link, useNavigate, useLocation } from "react-router-dom";
@@ -24,8 +24,9 @@ function AuthLogin() {
   function onSubmit(event) {
     event.preventDefault();
 
-    dispatch(loginUser(formData)).then((data) => {
+    dispatch(loginUser(formData)).then(async(data) => {
       if (data?.payload?.success) {
+        await dispatch(checkAuth());
         toast({
           title: data?.payload?.message,
         });

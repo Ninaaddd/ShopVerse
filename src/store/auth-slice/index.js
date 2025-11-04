@@ -103,8 +103,16 @@ const authSlice = createSlice({
         // console.log(action);
 
         state.isLoading = false;
-        state.user = action.payload.success ? action.payload.user : null;
-        state.isAuthenticated = action.payload.success;
+        if (action.payload.success) {
+          // Temporarily set minimal info
+          state.isAuthenticated = true;
+          state.user = { email: action.payload.user.email, userName: action.payload.user.userName };
+
+          // Then frontend should call checkAuth()
+        } else {
+          state.isAuthenticated = false;
+          state.user = null;
+        }
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;
