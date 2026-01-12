@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import axiosInstance from "@/api/axiosInstance";
 
 const initialState = {
   isLoading: false,
@@ -7,10 +7,10 @@ const initialState = {
 };
 
 export const addReview = createAsyncThunk(
-  "/order/addReview",
+  "order/addReview",
   async (formdata) => {
-    const response = await axios.post(
-      `https://shopverse-server.onrender.com/api/shop/review/add`,
+    const response = await axiosInstance.post(
+      "/api/shop/review/add",
       formdata
     );
 
@@ -18,16 +18,19 @@ export const addReview = createAsyncThunk(
   }
 );
 
-export const getReviews = createAsyncThunk("/order/getReviews", async (id) => {
-  const response = await axios.get(
-    `https://shopverse-server.onrender.com/api/shop/review/${id}`
-  );
+export const getReviews = createAsyncThunk(
+  "order/getReviews",
+  async (id) => {
+    const response = await axiosInstance.get(
+      `/api/shop/review/${id}`
+    );
 
-  return response.data;
-});
+    return response.data;
+  }
+);
 
 const reviewSlice = createSlice({
-  name: "reviewSlice",
+  name: "review",
   initialState,
   reducers: {},
   extraReducers: (builder) => {

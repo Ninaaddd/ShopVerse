@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
+import axiosInstance from "@/api/axiosInstance";
 
 const initialState = {
   isAuthenticated: false,
@@ -8,61 +8,43 @@ const initialState = {
 };
 
 export const registerUser = createAsyncThunk(
-  "/auth/register",
-
+  "auth/register",
   async (formData) => {
-    const response = await axios.post(
-      "https://shopverse-server.onrender.com/api/auth/register",
-      formData,
-      {
-        withCredentials: true,
-      }
+    const response = await axiosInstance.post(
+      "/api/auth/register",
+      formData
     );
-
     return response.data;
   }
 );
 
 export const loginUser = createAsyncThunk(
-  "/auth/login",
-
+  "auth/login",
   async (formData) => {
-    const response = await axios.post(
-      "https://shopverse-server.onrender.com/api/auth/login",
-      formData,
-      {
-        withCredentials: true,
-      }
+    const response = await axiosInstance.post(
+      "/api/auth/login",
+      formData
     );
-
     return response.data;
   }
 );
 
 export const logoutUser = createAsyncThunk(
-  "/auth/logout",
-
+  "auth/logout",
   async () => {
-    const response = await axios.post(
-      "https://shopverse-server.onrender.com/api/auth/logout",
-      {},
-      {
-        withCredentials: true,
-      }
+    const response = await axiosInstance.post(
+      "/api/auth/logout"
     );
-
     return response.data;
   }
 );
 
 export const checkAuth = createAsyncThunk(
-  "/auth/checkauth",
-
+  "auth/checkAuth",
   async () => {
-    const response = await axios.get(
-      "https://shopverse-server.onrender.com/api/auth/check-auth",
+    const response = await axiosInstance.get(
+      "/api/auth/check-auth",
       {
-        withCredentials: true,
         headers: {
           "Cache-Control":
             "no-store, no-cache, must-revalidate, proxy-revalidate",
@@ -79,19 +61,21 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     setUser: (state, action) => {
-     },
+      state.user = action.payload;
+      state.isAuthenticated = !!action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
       .addCase(registerUser.pending, (state) => {
         state.isLoading = true;
       })
-      .addCase(registerUser.fulfilled, (state, action) => {
+      .addCase(registerUser.fulfilled, (state) => {
         state.isLoading = false;
         state.user = null;
         state.isAuthenticated = false;
       })
-      .addCase(registerUser.rejected, (state, action) => {
+      .addCase(registerUser.rejected, (state) => {
         state.isLoading = false;
         state.user = null;
         state.isAuthenticated = false;
@@ -100,21 +84,21 @@ const authSlice = createSlice({
         state.isLoading = true;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
-        // console.log(action);
-
         state.isLoading = false;
-        if (action.payload.success) {
-          // Temporarily set minimal info
-          state.isAuthenticated = true;
-          state.user = { email: action.payload.user.email, userName: action.payload.user.userName };
 
-          // Then frontend should call checkAuth()
+        if (action.payload.success) {
+          // Minimal optimistic state; real source of truth = checkAuth
+          state.isAuthenticated = true;
+          state.user = {
+            email: action.payload.user.email,
+            userName: action.payload.user.userName,
+          };
         } else {
           state.isAuthenticated = false;
           state.user = null;
         }
       })
-      .addCase(loginUser.rejected, (state, action) => {
+      .addCase(loginUser.rejected, (state) => {
         state.isLoading = false;
         state.user = null;
         state.isAuthenticated = false;
@@ -124,15 +108,17 @@ const authSlice = createSlice({
       })
       .addCase(checkAuth.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.user = action.payload.success ? action.payload.user : null;
+        state.user = action.payload.success
+          ? action.payload.user
+          : null;
         state.isAuthenticated = action.payload.success;
       })
-      .addCase(checkAuth.rejected, (state, action) => {
+      .addCase(checkAuth.rejected, (state) => {
         state.isLoading = false;
         state.user = null;
         state.isAuthenticated = false;
       })
-      .addCase(logoutUser.fulfilled, (state, action) => {
+      .addCase(logoutUser.fulfilled, (state) => {
         state.isLoading = false;
         state.user = null;
         state.isAuthenticated = false;

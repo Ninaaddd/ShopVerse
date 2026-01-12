@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
+import axiosInstance from "@/api/axiosInstance";
 
 const initialState = {
   isLoading: false,
@@ -7,10 +7,10 @@ const initialState = {
 };
 
 export const getFeatureImages = createAsyncThunk(
-  "/order/getFeatureImages",
+  "common/getFeatureImages",
   async () => {
-    const response = await axios.get(
-      `https://shopverse-server.onrender.com/api/common/feature/get`
+    const response = await axiosInstance.get(
+      "/api/common/feature/get"
     );
 
     return response.data;
@@ -18,10 +18,10 @@ export const getFeatureImages = createAsyncThunk(
 );
 
 export const addFeatureImage = createAsyncThunk(
-  "/order/addFeatureImage",
+  "common/addFeatureImage",
   async (image) => {
-    const response = await axios.post(
-      `https://shopverse-server.onrender.com/api/common/feature/add`,
+    const response = await axiosInstance.post(
+      "/api/common/feature/add",
       { image }
     );
 
@@ -30,7 +30,7 @@ export const addFeatureImage = createAsyncThunk(
 );
 
 const commonSlice = createSlice({
-  name: "commonSlice",
+  name: "common",
   initialState,
   reducers: {},
   extraReducers: (builder) => {

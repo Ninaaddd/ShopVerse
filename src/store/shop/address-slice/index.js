@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import axiosInstance from "@/api/axiosInstance";
 
 const initialState = {
   isLoading: false,
@@ -7,14 +7,11 @@ const initialState = {
 };
 
 export const addNewAddress = createAsyncThunk(
-  "/addresses/addNewAddress",
+  "addresses/addNewAddress",
   async (formData) => {
-    const response = await axios.post(
-      "https://shopverse-server.onrender.com/api/shop/address/add",
-      formData,
-      {
-        withCredentials: true,
-      },
+    const response = await axiosInstance.post(
+      "/api/shop/address/add",
+      formData
     );
 
     return response.data;
@@ -22,13 +19,10 @@ export const addNewAddress = createAsyncThunk(
 );
 
 export const fetchAllAddresses = createAsyncThunk(
-  "/addresses/fetchAllAddresses",
+  "addresses/fetchAllAddresses",
   async () => {
-    const response = await axios.get(
-      `https://shopverse-server.onrender.com/api/shop/address/get`,
-      {
-        withCredentials: true,
-      },
+    const response = await axiosInstance.get(
+      "/api/shop/address/get"
     );
 
     return response.data;
@@ -36,14 +30,11 @@ export const fetchAllAddresses = createAsyncThunk(
 );
 
 export const editaAddress = createAsyncThunk(
-  "/addresses/editaAddress",
+  "addresses/editaAddress",
   async ({ addressId, formData }) => {
-    const response = await axios.put(
-      `https://shopverse-server.onrender.com/api/shop/address/update/${addressId}`,
-      formData,
-      {
-        withCredentials: true,
-      },
+    const response = await axiosInstance.put(
+      `/api/shop/address/update/${addressId}`,
+      formData
     );
 
     return response.data;
@@ -51,13 +42,10 @@ export const editaAddress = createAsyncThunk(
 );
 
 export const deleteAddress = createAsyncThunk(
-  "/addresses/deleteAddress",
+  "addresses/deleteAddress",
   async ({ addressId }) => {
-    const response = await axios.delete(
-      `https://shopverse-server.onrender.com/api/shop/address/delete/${addressId}`,
-      {
-        withCredentials: true,
-      },
+    const response = await axiosInstance.delete(
+      `/api/shop/address/delete/${addressId}`
     );
 
     return response.data;

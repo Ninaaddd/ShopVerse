@@ -1,11 +1,10 @@
-
 import { FileIcon, UploadCloudIcon, XIcon } from "lucide-react";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { useEffect, useRef } from "react";
 import { Button } from "../ui/button";
-import axios from "axios";
 import { Skeleton } from "../ui/skeleton";
+import axiosInstance from "@/api/axiosInstance";
 
 function ProductImageUpload({
   imageFile,
@@ -19,13 +18,8 @@ function ProductImageUpload({
 }) {
   const inputRef = useRef(null);
 
-  // console.log(isEditMode, "isEditMode");
-
   function handleImageFileChange(event) {
-    // console.log(event.target.files, "event.target.files");
     const selectedFile = event.target.files?.[0];
-    // console.log(selectedFile);
-
     if (selectedFile) setImageFile(selectedFile);
   }
 
@@ -47,35 +41,54 @@ function ProductImageUpload({
   }
 
   async function uploadImageToCloudinary() {
+    if (!imageFile) return;
+
     setImageLoadingState(true);
+
     const data = new FormData();
     data.append("my_file", imageFile);
-    const response = await axios.post(
-      `https://shopverse-server.onrender.com/api/admin/products/upload-image`,
-      data
-    );
-    // console.log(response, "response");
 
-    if (response?.data?.success) {
-      setUploadedImageUrl(response.data.result.url.replace(/^http:\/\//, "https://"));
+    try {
+      const response = await axiosInstance.post(
+        "/api/admin/products/upload-image",
+        data,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      if (response?.data?.success) {
+        setUploadedImageUrl(
+          response.data.result.url.replace(/^http:\/\//, "https://")
+        );
+      }
+    } finally {
       setImageLoadingState(false);
     }
   }
 
   useEffect(() => {
-    if (imageFile !== null) uploadImageToCloudinary();
+    if (imageFile) {
+      uploadImageToCloudinary();
+    }
   }, [imageFile]);
 
   return (
     <div
-      className={`w-full  mt-4 ${isCustomStyling ? "" : "max-w-md mx-auto"}`}
+      className={`w-full mt-4 ${
+        isCustomStyling ? "" : "max-w-md mx-auto"
+      }`}
     >
-      <Label className="text-lg font-semibold mb-2 block">Upload Image</Label>
+      <Label className="text-lg font-semibold mb-2 block">
+        Upload Image
+      </Label>
+
       <div
         onDragOver={handleDragOver}
         onDrop={handleDrop}
-        className={`${isEditMode ? "opacity-60" : ""
-          } border-2 border-dashed rounded-lg p-4`}
+        className={`${isEditMode ? "opacity-60" : ""} border-2 border-dashed rounded-lg p-4`}
       >
         <Input
           id="image-upload"
@@ -85,11 +98,11 @@ function ProductImageUpload({
           onChange={handleImageFileChange}
           disabled={isEditMode}
         />
+
         {!imageFile ? (
           <Label
             htmlFor="image-upload"
-            className={`${isEditMode ? "cursor-not-allowed" : ""
-              } flex flex-col items-center justify-center h-32 cursor-pointer`}
+            className={`${isEditMode ? "cursor-not-allowed" : ""} flex flex-col items-center justify-center h-32 cursor-pointer`}
           >
             <UploadCloudIcon className="w-10 h-10 text-muted-foreground mb-2" />
             <span>Drag & drop or click to upload image</span>
@@ -99,7 +112,7 @@ function ProductImageUpload({
         ) : (
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <FileIcon className="w-8 text-primary mr-2 h-8" />
+              <FileIcon className="w-8 h-8 text-primary mr-2" />
             </div>
             <p className="text-sm font-medium">{imageFile.name}</p>
             <Button
