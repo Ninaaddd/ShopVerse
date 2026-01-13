@@ -18,7 +18,6 @@ import UnauthPage from "./pages/unauth-page";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { checkAuth } from "./store/auth-slice";
-import { Skeleton } from "@/components/ui/skeleton";
 import PaypalReturnPage from "./pages/shopping-view/paypal-return";
 import PaymentSuccessPage from "./pages/shopping-view/payment-success";
 import SearchProducts from "./pages/shopping-view/search";
@@ -44,7 +43,24 @@ function App() {
 
 
 
-  if (isLoading) return <Skeleton className="w-[800] bg-black h-[600px]" />;
+  if (isLoading) {
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-white">
+      <div className="relative flex items-center justify-center">
+        {/* Spinner ring */}
+        <div className="absolute h-24 w-24 animate-pulse rounded-full border-4 border-gray-300 border-t-black animate-spin" />
+
+        {/* Center image from public folder */}
+        <img
+          src="/bag.ico"
+          alt="Loading"
+          className="h-24 w-24 object-contain"
+        />
+      </div>
+    </div>
+  );
+}
+
 
   console.log(isLoading, user);
 
