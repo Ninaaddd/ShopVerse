@@ -19,6 +19,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { checkAuth } from "./store/auth-slice";
 import PaypalReturnPage from "./pages/shopping-view/paypal-return";
+import PaypalCancelPage from "./pages/shopping-view/paypal-cancel";
 import PaymentSuccessPage from "./pages/shopping-view/payment-success";
 import SearchProducts from "./pages/shopping-view/search";
 
@@ -115,6 +116,7 @@ function App() {
               }
           />
           <Route path="paypal-return" element={<PaypalReturnPage />} />
+          <Route path="paypal-cancel" element={<PaypalCancelPage />} />
           <Route path="payment-success" element={<PaymentSuccessPage />} />
           <Route path="search" element={<SearchProducts />} />
         </Route>
