@@ -185,6 +185,18 @@ function ShoppingHeader() {
                   <UserCog className="mr-2 h-4 w-4" />
                   Account
                 </DropdownMenuItem>
+
+                {/* ✅ ADMIN ONLY
+                {isAdmin && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => navigate("/admin/dashboard")}>
+                      <UserCog className="mr-2 h-4 w-4" />
+                      Admin Dashboard
+                    </DropdownMenuItem>
+                  </>
+                )} */}
+
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4" />

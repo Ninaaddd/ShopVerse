@@ -3,9 +3,12 @@ import axiosInstance from "@/api/axiosInstance";
 
 const initialState = {
   isAuthenticated: false,
-  isLoading: true,
+  isLoading: true,        // auth loading
+  isAdmin: false,
+  isAdminLoading: true,   // ✅ ADD THIS
   user: null,
 };
+
 
 export const registerUser = createAsyncThunk(
   "auth/register",
@@ -56,6 +59,20 @@ export const checkAuth = createAsyncThunk(
   }
 );
 
+export const checkAdminAccess = createAsyncThunk(
+  "auth/checkAdminAccess",
+  async (_, { rejectWithValue }) => {
+    try {
+      await axiosInstance.get("/api/admin/access-check");
+      return true;
+    } catch (err) {
+      if (err.response?.status === 403) return false;
+      return rejectWithValue(err);
+    }
+  }
+);
+
+
 const authSlice = createSlice({
   name: "auth",
   initialState,
@@ -63,6 +80,10 @@ const authSlice = createSlice({
     setUser: (state, action) => {
       state.user = action.payload;
       state.isAuthenticated = !!action.payload;
+    },
+     adminAccessSkipped: (state) => {
+      state.isAdmin = false;
+      state.isAdminLoading = false;
     },
   },
   extraReducers: (builder) => {
@@ -122,9 +143,21 @@ const authSlice = createSlice({
         state.isLoading = false;
         state.user = null;
         state.isAuthenticated = false;
-      });
+      })
+      .addCase(checkAdminAccess.pending, (state) => {
+        state.isAdminLoading = true;
+      })
+      .addCase(checkAdminAccess.fulfilled, (state, action) => {
+        state.isAdmin = action.payload;
+        state.isAdminLoading = false;
+      })
+      .addCase(checkAdminAccess.rejected, (state) => {
+        state.isAdmin = false;
+        state.isAdminLoading = false;
+});
+
   },
 });
 
-export const { setUser } = authSlice.actions;
+export const { setUser,adminAccessSkipped } = authSlice.actions;
 export default authSlice.reducer;

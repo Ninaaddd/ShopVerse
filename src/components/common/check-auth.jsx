@@ -1,58 +1,34 @@
 import { Navigate, useLocation } from "react-router-dom";
 
-function CheckAuth({ isAuthenticated, user, children }) {
+function CheckAuth({ isAuthenticated, isAdmin, isLoading, children }) {
   const location = useLocation();
+  const path = location.pathname;
 
-  // console.log(location.pathname, isAuthenticated);
+  if(isLoading){
+    return null;
+  }
 
-  if (location.pathname === "/") {
-    if (!isAuthenticated) {
-      return <Navigate to="/auth/login" />;
-    } else {
-      if (user?.role === "admin") {
-        return <Navigate to="/admin/dashboard" />;
-      } else {
-        return <Navigate to="/shop/home" />;
-      }
+  // 1️⃣ Not logged in → login
+  if (!isAuthenticated) {
+    if (path.startsWith("/auth")) {
+      return <>{children}</>;
     }
+    return <Navigate to="/auth/login" replace />;
   }
 
-  if (
-    !isAuthenticated &&
-    !(
-      location.pathname.includes("/login") ||
-      location.pathname.includes("/register")
-    )
-  ) {
-    return <Navigate to="/auth/login" />;
+  // 2️⃣ Logged in users should not see auth pages
+  if (path.startsWith("/auth")) {
+    return <Navigate to="/shop/home" replace />;
   }
 
-  if (
-    isAuthenticated &&
-    (location.pathname.includes("/login") ||
-      location.pathname.includes("/register"))
-  ) {
-    if (user?.role === "admin") {
-      return <Navigate to="/admin/dashboard" />;
-    } else {
-      return <Navigate to="/shop/home" />;
-    }
+  // 3️⃣ 🚫 BLOCK non-admin users from admin routes
+  if (path.startsWith("/admin") && !isAdmin) {
+    return <Navigate to="/unauth-page" replace />;
   }
 
-  if (
-    isAuthenticated &&
-    user?.role !== "admin" &&
-    location.pathname.includes("admin")
-  ) {
-    return <Navigate to="/unauth-page" />;
-  }
-
-  if (
-    isAuthenticated &&
-    user?.role === "admin" &&
-    location.pathname.includes("shop")
-  ) {
-    return <Navigate to="/admin/dashboard" />;
+  // 4️⃣ ✅ Admin landing redirect (UX)
+  if (path === "/shop/home" && isAdmin) {
+    return <Navigate to="/admin/dashboard" replace />;
   }
 
   return <>{children}</>;
