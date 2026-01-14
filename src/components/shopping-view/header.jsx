@@ -1,3 +1,4 @@
+//src/components/shopping-view/header.jsx
 import { LogOut, Menu, ShoppingCart, UserCog } from "lucide-react";
 import {
   Link,
@@ -67,7 +68,7 @@ function MenuItems() {
 }
 
 function ShoppingHeader() {
-  const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const { isAuthenticated, user, isAdmin } = useSelector((state) => state.auth);
   const { cartItems } = useSelector((state) => state.shopCart);
   const [openCartSheet, setOpenCartSheet] = useState(false);
   const dispatch = useDispatch();
@@ -186,7 +187,7 @@ function ShoppingHeader() {
                   Account
                 </DropdownMenuItem>
 
-                {/* ✅ ADMIN ONLY
+                {/* ✅ ADMIN ONLY */}
                 {isAdmin && (
                   <>
                     <DropdownMenuSeparator />
@@ -195,7 +196,7 @@ function ShoppingHeader() {
                       Admin Dashboard
                     </DropdownMenuItem>
                   </>
-                )} */}
+                )}
 
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>

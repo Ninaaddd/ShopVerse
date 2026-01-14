@@ -129,16 +129,26 @@ const authSlice = createSlice({
       })
       .addCase(checkAuth.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.user = action.payload.success
-          ? action.payload.user
-          : null;
         state.isAuthenticated = action.payload.success;
+        state.user = action.payload.success ? action.payload.user : null;
+
+        // 👇 CRITICAL
+        if (!action.payload.success) {
+          state.isAdmin = false;
+          state.isAdminLoading = false;
+        }
       })
+
       .addCase(checkAuth.rejected, (state) => {
         state.isLoading = false;
-        state.user = null;
         state.isAuthenticated = false;
+        state.user = null;
+
+        // 👇 CRITICAL
+        state.isAdmin = false;
+        state.isAdminLoading = false;
       })
+
       .addCase(logoutUser.fulfilled, (state) => {
         state.isLoading = false;
         state.user = null;

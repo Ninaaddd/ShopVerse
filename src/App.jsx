@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, Navigate } from "react-router-dom";
 import AuthLayout from "./components/auth/layout";
 import AuthLogin from "./pages/auth/login";
 import AuthRegister from "./pages/auth/register";
@@ -30,69 +30,56 @@ function App() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-  const verifyUser = async () => {
-    try {
-      const action = await dispatch(checkAuth());
-
-      if (checkAuth.fulfilled.match(action)) {
-        dispatch(checkAdminAccess());
-      } else {
-        dispatch({ type: "auth/adminAccessSkipped" });
+    const bootstrap = async () => {
+      try {
+        const res = await dispatch(checkAuth()).unwrap();
+        // ✅ Only check admin access if user is authenticated
+        if (res.success && res.user) {
+          // Call checkAdminAccess but don't block on 403
+          dispatch(checkAdminAccess()).catch(() => {
+            // User is not admin, that's fine - just continue
+          });
+        }
+      } catch {
+        // unauthenticated is OK
       }
-    } catch (error) {
-      console.warn("❌ Auth check failed:", error);
-    }
-  };
-  verifyUser();
-}, [dispatch]);
+    };
+    bootstrap();
+  }, [dispatch]);
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-white">
+        <div className="relative flex items-center justify-center">
+          {/* Spinner ring */}
+          <div className="absolute h-24 w-24 animate-pulse rounded-full border-4 border-gray-300 border-t-black animate-spin" />
 
-
-
-  if (isLoading || isAdminLoading) {
-  return (
-    <div className="flex items-center justify-center min-h-screen bg-white">
-      <div className="relative flex items-center justify-center">
-        {/* Spinner ring */}
-        <div className="absolute h-24 w-24 animate-pulse rounded-full border-4 border-gray-300 border-t-black animate-spin" />
-
-        {/* Center image from public folder */}
-        <img
-          src="/bag.ico"
-          alt="Loading"
-          className="h-24 w-24 object-contain"
-        />
+          {/* Center image from public folder */}
+          <img
+            src="/bag.ico"
+            alt="Loading"
+            className="h-24 w-24 object-contain"
+          />
+        </div>
       </div>
-    </div>
-  );
-}
-
-
-  // console.log(isLoading, user);
+    );
+  }
 
   return (
     <div className="flex flex-col overflow-hidden bg-white">
       <Routes>
-        <Route
-            path="/"
-            element={
-              <CheckAuth
-                isAuthenticated={isAuthenticated}
-                isAdmin={isAdmin}
-                isLoading={isLoading}
-              >
-                <ShoppingLayout />
-              </CheckAuth>
-            }
-          >
-            <Route index element={<ShoppingHome />} />
-          </Route>
+        {/* Redirect root to /shop/home */}
+        <Route path="/" element={<Navigate to="/shop/home" replace />} />
 
-
+        {/* Auth Routes - redirect to /shop/home if already authenticated */}
         <Route
           path="/auth"
           element={
-            <CheckAuth isAuthenticated={isAuthenticated} isLoading={isLoading} user={user}>
+            <CheckAuth 
+              isAuthenticated={isAuthenticated} 
+              isLoading={isLoading} 
+              user={user}
+            >
               <AuthLayout />
             </CheckAuth>
           }
@@ -100,10 +87,18 @@ function App() {
           <Route path="login" element={<AuthLogin />} />
           <Route path="register" element={<AuthRegister />} />
         </Route>
+
+        {/* Admin Routes - protected */}
         <Route
           path="/admin"
           element={
-            <CheckAuth isAuthenticated={isAuthenticated} isLoading={isLoading} isAdmin={isAdmin} user={user}>
+            <CheckAuth 
+              isAuthenticated={isAuthenticated} 
+              isLoading={isLoading} 
+              isAdmin={isAdmin} 
+              isAdminLoading={isAdminLoading}
+              user={user}
+            >
               <AdminLayout />
             </CheckAuth>
           }
@@ -113,31 +108,45 @@ function App() {
           <Route path="orders" element={<AdminOrders />} />
           <Route path="features" element={<AdminFeatures />} />
         </Route>
+
+        {/* Shopping Routes - public with specific protected routes */}
         <Route path="/shop" element={<ShoppingLayout />}>
           <Route path="home" element={<ShoppingHome />} />
           <Route path="listing" element={<ShoppingListing />} />
+          <Route path="search" element={<SearchProducts />} />
+          
+          {/* Protected shopping routes */}
           <Route
-              path="checkout"
-              element={
-                <CheckAuth isAuthenticated={isAuthenticated} user={user}>
-                  <ShoppingCheckout />
-                </CheckAuth>
-              }
+            path="checkout"
+            element={
+              <CheckAuth isAuthenticated={isAuthenticated} user={user}>
+                <ShoppingCheckout />
+              </CheckAuth>
+            }
           />
           <Route
-              path="account"
-              element={
-                <CheckAuth isAuthenticated={isAuthenticated} isLoading={isLoading} user={user}>
-                  <ShoppingAccount />
-                </CheckAuth>
-              }
+            path="account"
+            element={
+              <CheckAuth 
+                isAuthenticated={isAuthenticated} 
+                isLoading={isLoading} 
+                user={user}
+              >
+                <ShoppingAccount />
+              </CheckAuth>
+            }
           />
+          
+          {/* Payment routes */}
           <Route path="paypal-return" element={<PaypalReturnPage />} />
           <Route path="paypal-cancel" element={<PaypalCancelPage />} />
           <Route path="payment-success" element={<PaymentSuccessPage />} />
-          <Route path="search" element={<SearchProducts />} />
         </Route>
+
+        {/* Unauthorized page */}
         <Route path="/unauth-page" element={<UnauthPage />} />
+        
+        {/* 404 */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </div>

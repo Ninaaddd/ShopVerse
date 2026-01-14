@@ -1,37 +1,53 @@
 import { Navigate, useLocation } from "react-router-dom";
 
-function CheckAuth({ isAuthenticated, isAdmin, isLoading, children }) {
+function CheckAuth({ isAuthenticated, isAdmin, isLoading, isAdminLoading, children }) {
   const location = useLocation();
-  const path = location.pathname;
+  const { pathname } = location;
 
-  if(isLoading){
-    return null;
-  }
-
-  // 1️⃣ Not logged in → login
-  if (!isAuthenticated) {
-    if (path.startsWith("/auth")) {
-      return <>{children}</>;
-    }
-    return <Navigate to="/auth/login" replace />;
-  }
-
-  // 2️⃣ Logged in users should not see auth pages
-  if (path.startsWith("/auth")) {
+  // ✅ If on /auth routes and already authenticated, redirect to shop
+  if (pathname.startsWith("/auth") && isAuthenticated) {
     return <Navigate to="/shop/home" replace />;
   }
 
-  // 3️⃣ 🚫 BLOCK non-admin users from admin routes
-  if (path.startsWith("/admin") && !isAdmin) {
-    return <Navigate to="/unauth-page" replace />;
+  // 🔐 Admin routes - require authentication AND admin role
+  if (pathname.startsWith("/admin")) {
+    // Still loading initial auth
+    if (isLoading) {
+      return null;
+    }
+
+    // Not authenticated at all
+    if (!isAuthenticated) {
+      return <Navigate to="/auth/login" replace state={{ from: pathname }} />;
+    }
+
+    // Authenticated but still checking admin status
+    if (isAdminLoading) {
+      return null;
+    }
+
+    // Authenticated but not admin
+    if (!isAdmin) {
+      // Use replace and clear history to prevent back button issues
+      return <Navigate to="/unauth-page" replace />;
+    }
   }
 
-  // 4️⃣ ✅ Admin landing redirect (UX)
-  if (path === "/shop/home" && isAdmin) {
-    return <Navigate to="/admin/dashboard" replace />;
+  // 🔐 Protected shopping routes - require authentication only
+  if (
+    pathname.startsWith("/shop/account") ||
+    pathname.startsWith("/shop/checkout")
+  ) {
+    if (isLoading) {
+      return null;
+    }
+
+    if (!isAuthenticated) {
+      return <Navigate to="/auth/login" replace state={{ from: pathname }} />;
+    }
   }
 
-  return <>{children}</>;
+  return children;
 }
 
 export default CheckAuth;

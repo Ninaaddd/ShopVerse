@@ -1,7 +1,7 @@
 import CommonForm from "@/components/common/form";
 import { useToast } from "@/components/ui/use-toast";
 import { loginFormControls } from "@/config";
-import { loginUser, checkAuth } from "@/store/auth-slice";
+import { loginUser, checkAuth, checkAdminAccess } from "@/store/auth-slice";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { Link, useNavigate, useLocation } from "react-router-dom";
@@ -21,23 +21,40 @@ function AuthLogin() {
   // 👇 fallback to homepage if no previous page was saved
   const from = location.state?.from || "/";
 
-  function onSubmit(event) {
+  async function onSubmit(event) {
     event.preventDefault();
 
-    dispatch(loginUser(formData)).then(async(data) => {
-      if (data?.payload?.success) {
-        await dispatch(checkAuth());
+    try {
+      const loginResult = await dispatch(loginUser(formData)).unwrap();
+      
+      if (loginResult?.success) {
+        // ✅ Refresh auth state
+        const authResult = await dispatch(checkAuth()).unwrap();
+        
+        // ✅ Check admin access if authenticated
+        if (authResult?.success) {
+          await dispatch(checkAdminAccess()).catch(() => {
+            // User is not admin, that's fine
+          });
+        }
+        
         toast({
-          title: data?.payload?.message,
+          title: loginResult?.message,
         });
+        
         navigate(from, { replace: true });
       } else {
         toast({
-          title: data?.payload?.message,
+          title: loginResult?.message,
           variant: "destructive",
         });
       }
-    });
+    } catch (error) {
+      toast({
+        title: error?.message || "Login failed",
+        variant: "destructive",
+      });
+    }
   }
 
   return (
@@ -47,7 +64,7 @@ function AuthLogin() {
           Sign in to your account
         </h1>
         <p className="mt-2">
-          Dont have an account
+          Don't have an account
           <Link
             className="font-medium ml-2 text-primary hover:underline"
             to="/auth/register"
