@@ -39,6 +39,8 @@ function AdminProducts() {
   const [uploadedImageUrl, setUploadedImageUrl] = useState("");
   const [imageLoadingState, setImageLoadingState] = useState(false);
   const [currentEditedId, setCurrentEditedId] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+
 
   const { productList } = useSelector((state) => state.adminProducts);
   const dispatch = useDispatch();
@@ -101,17 +103,40 @@ function AdminProducts() {
   }, [dispatch]);
 
   // console.log(formData, "productList");
+  const filteredProducts = productList?.filter((product) => {
+    if (!searchTerm) return true;
+
+    const term = searchTerm.toLowerCase();
+
+    return (
+      product.title?.toLowerCase().includes(term) ||
+      product.brand?.toLowerCase().includes(term) ||
+      product.category?.toLowerCase().includes(term)
+    );
+  });
+
 
   return (
     <Fragment>
-      <div className="mb-5 w-full flex justify-end">
+
+      <div className="mb-4 flex items-center justify-between gap-4">
         <Button onClick={() => setOpenCreateProductsDialog(true)}>
           Add New Product
         </Button>
+
+        <input
+          type="text"
+          placeholder="Search by title, brand, or category..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full max-w-sm rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
+        />
       </div>
+
+
       <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
-        {productList && productList.length > 0
-          ? productList.map((productItem, i) => (
+        {filteredProducts && filteredProducts.length > 0
+          ? filteredProducts.map((productItem, i) => (
             <AdminProductTile
               key={i}
               setFormData={setFormData}
