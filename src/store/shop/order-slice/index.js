@@ -11,11 +11,11 @@ const initialState = {
 
 export const createNewOrder = createAsyncThunk(
   "order/createNewOrder",
-  async (_, { rejectWithValue }) => {
+  async (orderData, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.post(
         "/api/shop/order/create",
-        {} // server derives user + cart from cookie
+        {orderData} // server derives user + cart from cookie
       );
 
       return response.data; // { success, approvalURL, orderId }
