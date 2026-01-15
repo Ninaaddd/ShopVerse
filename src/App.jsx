@@ -1,3 +1,4 @@
+//src/App.jsx
 import { Route, Routes, Navigate } from "react-router-dom";
 import AuthLayout from "./components/auth/layout";
 import AuthLogin from "./pages/auth/login";
@@ -30,24 +31,21 @@ function App() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const bootstrap = async () => {
-      try {
-        const res = await dispatch(checkAuth()).unwrap();
-        // ✅ Only check admin access if user is authenticated
-        if (res.success && res.user) {
-          // Call checkAdminAccess but don't block on 403
-          dispatch(checkAdminAccess()).catch(() => {
-            // User is not admin, that's fine - just continue
-          });
-        }
-      } catch {
-        // unauthenticated is OK
+  const bootstrap = async () => {
+    try {
+      const res = await dispatch(checkAuth()).unwrap();
+      // ✅ Await admin check instead of fire-and-forget
+      if (res.success && res.user) {
+        await dispatch(checkAdminAccess()).unwrap();
       }
-    };
-    bootstrap();
-  }, [dispatch]);
+    } catch {
+      // User is either not authenticated or not an admin
+    }
+  };
+  bootstrap();
+}, [dispatch]);
 
-  if (isLoading) {
+  if (isLoading || isAdminLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-white">
         <div className="relative flex items-center justify-center">

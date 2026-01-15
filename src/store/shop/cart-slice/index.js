@@ -1,3 +1,4 @@
+//src/store/shop/cart-slice/index.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "@/api/axiosInstance";
 
@@ -6,13 +7,13 @@ const initialState = {
   isLoading: false,
 };
 
+// ✅ Removed userId from parameters - backend gets it from auth token
 export const addToCart = createAsyncThunk(
   "cart/addToCart",
-  async ({ userId, productId, quantity }) => {
+  async ({ productId, quantity }) => {
     const response = await axiosInstance.post(
       "/api/shop/cart/add",
       {
-        userId,
         productId,
         quantity,
       }
@@ -22,35 +23,37 @@ export const addToCart = createAsyncThunk(
   }
 );
 
+// ✅ No parameters needed - backend gets userId from auth token
 export const fetchCartItems = createAsyncThunk(
   "cart/fetchCartItems",
-  async (userId) => {
+  async () => {
     const response = await axiosInstance.get(
-      `/api/shop/cart/get/${userId}`
+      "/api/shop/cart/get"
     );
 
     return response.data;
   }
 );
 
+// ✅ Only productId needed - backend gets userId from auth token
 export const deleteCartItem = createAsyncThunk(
   "cart/deleteCartItem",
-  async ({ userId, productId }) => {
+  async ({ productId }) => {
     const response = await axiosInstance.delete(
-      `/api/shop/cart/${userId}/${productId}`
+      `/api/shop/cart/${productId}`
     );
 
     return response.data;
   }
 );
 
+// ✅ Removed userId from parameters - backend gets it from auth token
 export const updateCartQuantity = createAsyncThunk(
   "cart/updateCartQuantity",
-  async ({ userId, productId, quantity }) => {
+  async ({ productId, quantity }) => {
     const response = await axiosInstance.put(
       "/api/shop/cart/update-cart",
       {
-        userId,
         productId,
         quantity,
       }

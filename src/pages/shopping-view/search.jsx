@@ -59,13 +59,12 @@ function SearchProducts() {
 
     dispatch(
       addToCart({
-        userId: user?.id,
         productId: getCurrentProductId,
         quantity: 1,
       })
     ).then((data) => {
       if (data?.payload?.success) {
-        dispatch(fetchCartItems(user?.id));
+        dispatch(fetchCartItems());
         toast({
           title: "Product is added to cart",
         });

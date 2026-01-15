@@ -11,9 +11,13 @@ function CheckAuth({ isAuthenticated, isAdmin, isLoading, isAdminLoading, childr
 
   // 🔐 Admin routes - require authentication AND admin role
   if (pathname.startsWith("/admin")) {
-    // Still loading initial auth
-    if (isLoading) {
-      return null;
+    // ✅ Block rendering during ANY loading state
+    if (isLoading || isAdminLoading) {
+      return (
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+        </div>
+      );
     }
 
     // Not authenticated at all
@@ -21,14 +25,8 @@ function CheckAuth({ isAuthenticated, isAdmin, isLoading, isAdminLoading, childr
       return <Navigate to="/auth/login" replace state={{ from: pathname }} />;
     }
 
-    // Authenticated but still checking admin status
-    if (isAdminLoading) {
-      return null;
-    }
-
-    // Authenticated but not admin
-    if (!isAdmin) {
-      // Use replace and clear history to prevent back button issues
+    // ✅ Explicitly check isAdmin is true (not just truthy)
+    if (isAdmin !== true) {
       return <Navigate to="/unauth-page" replace />;
     }
   }
