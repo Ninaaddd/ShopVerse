@@ -19,10 +19,10 @@ export const getFeatureImages = createAsyncThunk(
 
 export const addFeatureImage = createAsyncThunk(
   "common/addFeatureImage",
-  async (image) => {
+  async ({ image, linkType, linkValue }) => {
     const response = await axiosInstance.post(
       "/api/common/feature/add",
-      { image }
+      { image, linkType, linkValue }
     );
 
     return response.data;

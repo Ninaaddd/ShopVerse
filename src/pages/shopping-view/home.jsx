@@ -1,20 +1,7 @@
 import { Button } from "@/components/ui/button";
-import bannerOne from "../../assets/banner-1.webp";
-import bannerTwo from "../../assets/banner-2.webp";
-import bannerThree from "../../assets/banner-3.webp";
 import {
-  Airplay,
-  BabyIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
-  CloudLightning,
-  Heater,
-  Images,
-  Shirt,
-  ShirtIcon,
-  ShoppingBasket,
-  UmbrellaIcon,
-  WashingMachine,
   WatchIcon,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -102,17 +89,33 @@ function ShoppingHome() {
     });
   }
 
+  const handleFeatureImageClick = (featureImage) => {
+    if (featureImage.linkType === "none" || !featureImage.linkValue) {
+      return; // No action if no link configured
+    }
+
+    // Navigate to listing page with appropriate filter
+    if (featureImage.linkType === "category") {
+      navigate(`/shop/listing?category=${featureImage.linkValue}`);
+    } else if (featureImage.linkType === "brand") {
+      navigate(`/shop/listing?brand=${featureImage.linkValue}`);
+    }
+  };
+
   useEffect(() => {
     if (productDetails !== null) setOpenDetailsDialog(true);
   }, [productDetails]);
 
   useEffect(() => {
+    if (!featureImageList || featureImageList.length === 0) return;
+
     const timer = setInterval(() => {
-      setCurrentSlide((prevSlide) => (prevSlide + 1) % featureImageList.length);
+      setCurrentSlide((prev) => (prev + 1) % featureImageList.length);
     }, 15000);
 
     return () => clearInterval(timer);
   }, [featureImageList]);
+
 
   useEffect(() => {
     dispatch(
@@ -132,43 +135,60 @@ function ShoppingHome() {
   return (
     <div className="flex flex-col min-h-screen">
       <div className="relative w-full h-[600px] overflow-hidden">
-        {featureImageList && featureImageList.length > 0
-          ? featureImageList.map((slide, index) => (
-            <img
-              src={slide?.image}
-              key={index}
-              className={`${index === currentSlide ? "opacity-100" : "opacity-0"
-                } absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-1000`}
-            />
-          ))
-          : null}
+        {/* SLIDER TRACK */}
+        <div
+          className="flex h-full transition-transform duration-700 ease-in-out"
+          style={{
+            transform: `translateX(-${currentSlide * 100}%)`,
+          }}
+        >
+          {featureImageList?.map((featureImg) => (
+            <div
+              key={featureImg._id}
+              className="w-full h-full flex-shrink-0 cursor-pointer"
+              onClick={() => handleFeatureImageClick(featureImg)}
+            >
+              <img
+                src={featureImg.image}
+                alt="Feature"
+                className="w-full h-full object-contain"
+              />
+            </div>
+          ))}
+        </div>
+
+
+        {/* LEFT BUTTON */}
         <Button
           variant="outline"
           size="icon"
           onClick={() =>
             setCurrentSlide(
-              (prevSlide) =>
-                (prevSlide - 1 + featureImageList.length) %
+              (prev) =>
+                (prev - 1 + featureImageList.length) %
                 featureImageList.length
             )
           }
-          className="absolute top-1/2 left-4 transform -translate-y-1/2 bg-white/80"
+          className="absolute top-1/2 left-4 -translate-y-1/2 bg-white/80 z-10"
         >
           <ChevronLeftIcon className="w-4 h-4" />
         </Button>
+
+        {/* RIGHT BUTTON */}
         <Button
           variant="outline"
           size="icon"
           onClick={() =>
             setCurrentSlide(
-              (prevSlide) => (prevSlide + 1) % featureImageList.length
+              (prev) => (prev + 1) % featureImageList.length
             )
           }
-          className="absolute top-1/2 right-4 transform -translate-y-1/2 bg-white/80"
+          className="absolute top-1/2 right-4 -translate-y-1/2 bg-white/80 z-10"
         >
           <ChevronRightIcon className="w-4 h-4" />
         </Button>
       </div>
+
       <section className="py-12 bg-gray-50">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-8">
