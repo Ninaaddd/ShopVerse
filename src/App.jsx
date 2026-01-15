@@ -19,6 +19,7 @@ import UnauthPage from "./pages/unauth-page";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { checkAuth, checkAdminAccess } from "./store/auth-slice";
+import { fetchCartItems } from "./store/shop/cart-slice";
 import PaypalReturnPage from "./pages/shopping-view/paypal-return";
 import PaypalCancelPage from "./pages/shopping-view/paypal-cancel";
 import PaymentSuccessPage from "./pages/shopping-view/payment-success";
@@ -37,6 +38,7 @@ function App() {
       // ✅ Await admin check instead of fire-and-forget
       if (res.success && res.user) {
         await dispatch(checkAdminAccess()).unwrap();
+        await dispatch(fetchCartItems()).unwrap();
       }
     } catch {
       // User is either not authenticated or not an admin
