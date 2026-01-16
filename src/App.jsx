@@ -37,8 +37,8 @@ function App() {
       const res = await dispatch(checkAuth()).unwrap();
       // ✅ Await admin check instead of fire-and-forget
       if (res.success && res.user) {
-        await dispatch(checkAdminAccess()).unwrap();
         await dispatch(fetchCartItems()).unwrap();
+        await dispatch(checkAdminAccess()).unwrap();
       }
     } catch {
       // User is either not authenticated or not an admin
