@@ -1,8 +1,19 @@
+function handleCancelLinkDialog() {
+    setShowLinkDialog(false);
+    setImageFile(null);
+    setUploadedImageUrl("");
+  }//src/pages/admin-view/dashboard.jsx
 import ProductImageUpload from "@/components/admin-view/image-upload";
 import FeatureLinkDialog from "@/components/admin-view/feature-link-dialog";
+import EditFeatureDialog from "@/components/admin-view/edit-feature-dialog";
 import { Button } from "@/components/ui/button";
-import { addFeatureImage, getFeatureImages, deleteFeatureImage } from "@/store/common-slice";
-import { Trash2, Link as LinkIcon } from "lucide-react";
+import { 
+  addFeatureImage, 
+  updateFeatureImage,
+  getFeatureImages, 
+  deleteFeatureImage 
+} from "@/store/common-slice";
+import { Trash2, Pencil } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Badge } from "@/components/ui/badge";
@@ -12,24 +23,49 @@ function AdminDashboard() {
   const [uploadedImageUrl, setUploadedImageUrl] = useState("");
   const [imageLoadingState, setImageLoadingState] = useState(false);
   const [showLinkDialog, setShowLinkDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editingFeature, setEditingFeature] = useState(null);
   const dispatch = useDispatch();
   const { featureImageList } = useSelector((state) => state.commonFeature);
 
   // When image is uploaded, show the link configuration dialog
+  // BUT only if we're not in edit mode
   useEffect(() => {
-    if (uploadedImageUrl && !showLinkDialog) {
+    if (uploadedImageUrl && !showLinkDialog && !showEditDialog) {
       setShowLinkDialog(true);
     }
-  }, [uploadedImageUrl]);
+  }, [uploadedImageUrl, showEditDialog, showLinkDialog]);
 
-  function handleSaveFeatureImage({ image, linkType, linkValue }) {
-    dispatch(addFeatureImage({ image, linkType, linkValue })).then((data) => {
+  function handleSaveFeatureImage({ image, categories, brand }) {
+    dispatch(addFeatureImage({ image, categories, brand })).then((data) => {
       if (data?.payload?.success) {
         dispatch(getFeatureImages());
+        // Clear the upload state to prevent dialog from reopening
         setImageFile(null);
         setUploadedImageUrl("");
+        setShowLinkDialog(false);
       }
     });
+  }
+
+  function handleEditFeature(featureItem) {
+    setEditingFeature(featureItem);
+    setShowEditDialog(true);
+  }
+
+  function handleUpdateFeatureImage({ id, image, categories, brand }) {
+    dispatch(updateFeatureImage({ id, image, categories, brand })).then((data) => {
+      if (data?.payload?.success) {
+        dispatch(getFeatureImages());
+        setEditingFeature(null);
+        setShowEditDialog(false);
+      }
+    });
+  }
+
+  function handleCloseEditDialog() {
+    setShowEditDialog(false);
+    setEditingFeature(null);
   }
 
   function handleDeleteFeatureImage(id) {
@@ -58,9 +94,16 @@ function AdminDashboard() {
       
       <FeatureLinkDialog
         open={showLinkDialog}
-        setOpen={setShowLinkDialog}
+        setOpen={handleCancelLinkDialog}
         imageUrl={uploadedImageUrl}
         onSave={handleSaveFeatureImage}
+      />
+
+      <EditFeatureDialog
+        open={showEditDialog}
+        setOpen={handleCloseEditDialog}
+        featureData={editingFeature}
+        onSave={handleUpdateFeatureImage}
       />
 
       <div className="flex flex-col gap-4 mt-5">
@@ -73,23 +116,40 @@ function AdminDashboard() {
                   alt="Feature"
                 />
                 
-                {/* Link Badge */}
-                {featureImgItem.linkType !== "none" && (
-                  <Badge className="absolute top-2 left-2 bg-blue-500">
-                    <LinkIcon className="h-3 w-3 mr-1" />
-                    {featureImgItem.linkType}: {featureImgItem.linkValue}
-                  </Badge>
-                )}
+                {/* Info Badges */}
+                <div className="absolute top-2 left-2 flex flex-col gap-2">
+                  {/* Categories Badge */}
+                  {featureImgItem.categories && featureImgItem.categories.length > 0 && (
+                    <Badge className="bg-blue-500">
+                      Categories: {featureImgItem.categories.join(', ')}
+                    </Badge>
+                  )}
+                  
+                  {/* Brand Badge */}
+                  {featureImgItem.brand && (
+                    <Badge className="bg-purple-500">
+                      Brand: {featureImgItem.brand}
+                    </Badge>
+                  )}
+                </div>
                 
-                {/* Delete Button */}
-                <Button
-                  variant="destructive"
-                  size="icon"
-                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={() => handleDeleteFeatureImage(featureImgItem._id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                {/* Action Buttons */}
+                <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button
+                    variant="secondary"
+                    size="icon"
+                    onClick={() => handleEditFeature(featureImgItem)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    onClick={() => handleDeleteFeatureImage(featureImgItem._id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             ))
           : null}

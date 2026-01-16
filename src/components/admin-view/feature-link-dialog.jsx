@@ -1,3 +1,4 @@
+//src/components/admin-view/feature-link-dialog.jsx
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Label } from "../ui/label";
 import { Button } from "../ui/button";
@@ -9,7 +10,8 @@ import {
   SelectValue,
 } from "../ui/select";
 import { useState } from "react";
-import { WatchIcon } from "lucide-react";
+import { WatchIcon, X } from "lucide-react";
+import { Badge } from "../ui/badge";
 import NikeIcon from '../../assets/nike.png'
 import AdiIcon from '../../assets/adidas.png'
 import PumaIcon from '../../assets/puma.png'
@@ -21,7 +23,7 @@ import WomanIcon from '../../assets/woman.png'
 import KidsIcon from '../../assets/boy.png'
 import FootIcon from '../../assets/sneakers.png'
 
-const categories = [
+const categoryOptions = [
   { id: "men", label: "Men", icon: ManIcon },
   { id: "women", label: "Women", icon: WomanIcon },
   { id: "kids", label: "Kids", icon: KidsIcon },
@@ -29,7 +31,7 @@ const categories = [
   { id: "footwear", label: "Footwear", icon: FootIcon },
 ];
 
-const brands = [
+const brandOptions = [
   { id: "nike", label: "Nike", icon: NikeIcon },
   { id: "adidas", label: "Adidas", icon: AdiIcon },
   { id: "puma", label: "Puma", icon: PumaIcon },
@@ -39,32 +41,51 @@ const brands = [
 ];
 
 function FeatureLinkDialog({ open, setOpen, imageUrl, onSave }) {
-  const [linkType, setLinkType] = useState("none");
-  const [linkValue, setLinkValue] = useState("");
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [selectedBrand, setSelectedBrand] = useState("");
+
+  const handleAddCategory = (categoryId) => {
+    if (categoryId && !selectedCategories.includes(categoryId)) {
+      setSelectedCategories([...selectedCategories, categoryId]);
+    }
+  };
+
+  const handleRemoveCategory = (categoryId) => {
+    setSelectedCategories(selectedCategories.filter(cat => cat !== categoryId));
+  };
 
   const handleSave = () => {
     onSave({
       image: imageUrl,
-      linkType,
-      linkValue: linkType === "none" ? null : linkValue,
+      categories: selectedCategories,
+      brand: selectedBrand || null,
     });
     // Reset state
-    setLinkType("none");
-    setLinkValue("");
+    setSelectedCategories([]);
+    setSelectedBrand("");
     setOpen(false);
   };
 
   const handleCancel = () => {
-    setLinkType("none");
-    setLinkValue("");
+    setSelectedCategories([]);
+    setSelectedBrand("");
     setOpen(false);
   };
+
+  const isValid = () => {
+    return selectedCategories.length > 0 || selectedBrand;
+  };
+
+  // Get categories that aren't already selected
+  const availableCategories = categoryOptions.filter(
+    cat => !selectedCategories.includes(cat.id)
+  );
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Configure Feature Image Link</DialogTitle>
+          <DialogTitle>Configure Feature Image</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-6 py-4">
@@ -77,57 +98,84 @@ function FeatureLinkDialog({ open, setOpen, imageUrl, onSave }) {
             />
           </div>
 
-          {/* Link Type Selection */}
+          {/* Categories Selection (Multiple) */}
           <div className="space-y-2">
-            <Label htmlFor="linkType">Link Type</Label>
-            <Select value={linkType} onValueChange={setLinkType}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select link type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">No Link</SelectItem>
-                <SelectItem value="category">Category</SelectItem>
-                <SelectItem value="brand">Brand</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+            <Label>Categories (Multiple Selection)</Label>
+            
+            {/* Selected Categories */}
+            {selectedCategories.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-2">
+                {selectedCategories.map((catId) => {
+                  const category = categoryOptions.find(c => c.id === catId);
+                  return (
+                    <Badge 
+                      key={catId} 
+                      variant="secondary"
+                      className="flex items-center gap-1 px-3 py-1"
+                    >
+                      {category?.label}
+                      <X 
+                        className="h-3 w-3 cursor-pointer hover:text-red-500" 
+                        onClick={() => handleRemoveCategory(catId)}
+                      />
+                    </Badge>
+                  );
+                })}
+              </div>
+            )}
 
-          {/* Category Selection */}
-          {linkType === "category" && (
-            <div className="space-y-2">
-              <Label htmlFor="category">Select Category</Label>
-              <Select value={linkValue} onValueChange={setLinkValue}>
+            {/* Category Dropdown */}
+            {availableCategories.length > 0 && (
+              <Select onValueChange={handleAddCategory}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Choose a category" />
+                  <SelectValue placeholder="Add a category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {categories.map((cat) => (
+                  {availableCategories.map((cat) => (
                     <SelectItem key={cat.id} value={cat.id}>
                       {cat.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-          )}
+            )}
+          </div>
 
-          {/* Brand Selection */}
-          {linkType === "brand" && (
-            <div className="space-y-2">
-              <Label htmlFor="brand">Select Brand</Label>
-              <Select value={linkValue} onValueChange={setLinkValue}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Choose a brand" />
+          {/* Brand Selection (Single) */}
+          <div className="space-y-2">
+            <Label>Brand (Single Selection - Optional)</Label>
+            <div className="flex gap-2">
+              <Select value={selectedBrand || "none"} onValueChange={(value) => setSelectedBrand(value === "none" ? "" : value)}>
+                <SelectTrigger className="flex-1">
+                  <SelectValue placeholder="Choose a brand (optional)" />
                 </SelectTrigger>
                 <SelectContent>
-                  {brands.map((brand) => (
+                  <SelectItem value="none">None</SelectItem>
+                  {brandOptions.map((brand) => (
                     <SelectItem key={brand.id} value={brand.id}>
                       {brand.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              {selectedBrand && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSelectedBrand("")}
+                >
+                  Clear
+                </Button>
+              )}
             </div>
+          </div>
+
+          {/* Validation Message */}
+          {!isValid() && (
+            <p className="text-sm text-red-500">
+              At least one category or brand must be selected
+            </p>
           )}
 
           {/* Action Buttons */}
@@ -137,7 +185,7 @@ function FeatureLinkDialog({ open, setOpen, imageUrl, onSave }) {
             </Button>
             <Button 
               onClick={handleSave}
-              disabled={linkType !== "none" && !linkValue}
+              disabled={!isValid()}
             >
               Save Feature Image
             </Button>

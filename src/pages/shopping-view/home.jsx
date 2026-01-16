@@ -44,6 +44,7 @@ const brandsWithIcon = [
   { id: "zara", label: "Zara", icon: ZaraIcon },
   { id: "h&m", label: "H&M", icon: HMIcon },
 ];
+
 function ShoppingHome() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const { productList, productDetails } = useSelector(
@@ -90,16 +91,31 @@ function ShoppingHome() {
   }
 
   const handleFeatureImageClick = (featureImage) => {
-    if (featureImage.linkType === "none" || !featureImage.linkValue) {
+    // Check if there are any categories or brand configured
+    const hasCategories = featureImage.categories && featureImage.categories.length > 0;
+    const hasBrand = featureImage.brand;
+
+    if (!hasCategories && !hasBrand) {
       return; // No action if no link configured
     }
 
-    // Navigate to listing page with appropriate filter
-    if (featureImage.linkType === "category") {
-      navigate(`/shop/listing?category=${featureImage.linkValue}`);
-    } else if (featureImage.linkType === "brand") {
-      navigate(`/shop/listing?brand=${featureImage.linkValue}`);
+    // Build the filter object
+    sessionStorage.removeItem("filters");
+    const currentFilter = {};
+
+    // Add categories if available
+    if (hasCategories) {
+      currentFilter.category = featureImage.categories;
     }
+
+    // Add brand if available
+    if (hasBrand) {
+      currentFilter.brand = [featureImage.brand];
+    }
+
+    // Save filter and navigate
+    sessionStorage.setItem("filters", JSON.stringify(currentFilter));
+    navigate(`/shop/listing`);
   };
 
   useEffect(() => {
@@ -116,7 +132,6 @@ function ShoppingHome() {
     return () => clearInterval(timer);
   }, [featureImageList]);
 
-
   useEffect(() => {
     dispatch(
       fetchAllFilteredProducts({
@@ -125,8 +140,6 @@ function ShoppingHome() {
       })
     );
   }, [dispatch]);
-
-  // console.log(productList, "productList");
 
   useEffect(() => {
     dispatch(getFeatureImages());
@@ -156,7 +169,6 @@ function ShoppingHome() {
             </div>
           ))}
         </div>
-
 
         {/* LEFT BUTTON */}
         <Button
@@ -197,6 +209,7 @@ function ShoppingHome() {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {categoriesWithIcon.map((categoryItem) => (
               <Card
+                key={categoryItem.id}
                 onClick={() =>
                   handleNavigateToListingPage(categoryItem, "category")
                 }
@@ -222,6 +235,7 @@ function ShoppingHome() {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {brandsWithIcon.map((brandItem) => (
               <Card
+                key={brandItem.id}
                 onClick={() => handleNavigateToListingPage(brandItem, "brand")}
                 className="cursor-pointer hover:shadow-lg transition-shadow"
               >
@@ -248,6 +262,7 @@ function ShoppingHome() {
             {productList && productList.length > 0
               ? productList.map((productItem) => (
                 <ShoppingProductTile
+                  key={productItem._id}
                   handleGetProductDetails={handleGetProductDetails}
                   product={productItem}
                   handleAddtoCart={handleAddtoCart}

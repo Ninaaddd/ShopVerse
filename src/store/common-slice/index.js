@@ -19,10 +19,22 @@ export const getFeatureImages = createAsyncThunk(
 
 export const addFeatureImage = createAsyncThunk(
   "common/addFeatureImage",
-  async ({ image, linkType, linkValue }) => {
+  async ({ image, categories, brand }) => {
     const response = await axiosInstance.post(
       "/api/common/feature/add",
-      { image, linkType, linkValue }
+      { image, categories, brand }
+    );
+
+    return response.data;
+  }
+);
+
+export const updateFeatureImage = createAsyncThunk(
+  "common/updateFeatureImage",
+  async ({ id, image, categories, brand }) => {
+    const response = await axiosInstance.put(
+      `/api/common/feature/update/${id}`,
+      { image, categories, brand }
     );
 
     return response.data;
