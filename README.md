@@ -256,13 +256,3 @@ Each service is deployed independently for reliability and scalability.
 * Email notifications
 
 ---
-
-## 🧑‍💻 Author
-
-**Ninad**
-
-If you find this project helpful or would like to contribute, feel free to open an issue or submit a pull request.
-
----
-
-⭐ If this project helped you, consider giving the repository a star!
