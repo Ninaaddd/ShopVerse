@@ -177,7 +177,7 @@ This guarantees consistent behavior across refreshes and deployments.
 Create a `.env` file in the frontend root directory:
 
 ```env
-VITE_API_BASE_URL=https://shopverse-kmmo.onrender.com
+VITE_API_BASE_URL=https://myshopverse.vercel.app
 ```
 
 > Authentication tokens are never stored in `localStorage`.
